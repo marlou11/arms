@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Distribution Records Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="icon" href="ARMS LOGO.png" type="image/png">
+
+    <style>
+
+*,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+        
+
+        
+
+        body {
+            font-family: 'Inter', Arial, sans-serif;  /* Modern font */
+            background-color: #f4f7fc;  /* Softer background */
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            flex-direction: row;
+        }
+
+        .sidebar {
+            width: 260px;
+            background-color: #2d3436;  /* Darker sidebar color */
+            color: white;
+            padding: 20px;
+            height: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            transition: width 0.3s ease;
+        }
+
+        .sidebar h2 {
+            color: #ffffff;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 20px; /* Slightly larger */
+            font-weight: 500;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sidebar ul li {
+            padding: 15px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            display: flex;
+            align-items: center;
+            font-size: 16px;
+        }
+
+
+        .sidebar ul li:hover {
+            background-color: #27ae60;
+        }
+
+        .sidebar ul li i {
+            margin-right: 15px;
+            font-size: 18px;
+        }
+
+        .container {
+            margin-left: 260px;  /* Adjusted for wider sidebar */
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            width: calc(100% - 260px);
+            background: linear-gradient(to bottom, #d1f53200 25%, #4ed42d 90%, #0e8818 100%) transparent;
+            background-size: 100%;
+        }
+
+        .summary {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .batch-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .batch-box {
+        background-color: #f9f9f9;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        width: 300px;
+        cursor: pointer;
+        transition: background 0.3s ease;
+        position: relative;
+        margin-bottom: 20px;
+    }
+
+        .batch-box .icon-container {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+    }
+
+    .batch-box:hover {
+    background-color: hsl(123, 81%, 29%);
+    color: rgb(0, 0, 0);
+}
+
+.batch-details {
+    margin-top: 10px;
+    display: none;
+    background-color: #f9f9f9;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.batch-details table {
+    width: 100%;
+    margin-top: 10px;
+    border-collapse: collapse;
+}
+
+.batch-details th,
+.batch-details td {
+    padding: 10px;
+    border: 1px solid #ddd;
+}
+
+.button,
+.cv-button {
+    background-color: #27ae60;
+    border: none;
+    color: white;
+    padding: 16px;
+    text-align: center;
+    font-size: 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.button:hover,
+.cv-button:hover {
+    background-color: #219150;
+}
+
+.cv-button i {
+    margin-right: 8px;
+}
+
+
+.history-timeline {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+        .history-timeline .history-item {
+            display: flex;
+            align-items: center;
+        }
+
+        .history-timeline .history-item::before {
+            content: '';
+            width: 10px;
+            height: 10px;
+            background-color: #28a745;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .history-timeline .history-item span {
+            font-size: 14px;
+            color: #333;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: #fff;
+            padding: 40px;
+            border-radius: 12px;
+            width: 500px;
+            position: relative;
+            max-width: 90%;
+            box-shadow: 0 6px 30px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            box-sizing: border-box;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            cursor: pointer;
+            font-size: 24px;
+            color: #333;
+        }
+
+        .modal-header {
+            font-size: 22px;  /* Larger for clarity */
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 25px;
+            color: #333;
+        }
+
+    /* Form input fields */
+    .modal-form input,
+    .modal-form select,
+    .modal-form textarea {
+        width: 100%;
+        padding: 16px;  /* Spacious padding */
+        font-size: 16px;
+        border-radius: 10px;
+        border: 1px solid #ddd;
+        outline: none;
+        box-sizing: border-box;
+        transition: border-color 0.3s ease; /* Ensure padding doesn't affect width */
+    }
+
+
+    .modal-form textarea {
+        min-height: 180px;
+    }
+
+
+
+    .modal-form input:focus,
+    .modal-form select:focus,
+    .modal-form textarea:focus {
+        border-color: #27ae60;
+    }
+
+        .modal-form label {
+        font-size: 14px;
+        color: #333;
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+
+    .modal-form .button,
+    .button {
+        background-color: #27ae60;
+        color: white;
+        padding: 16px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        width: 100%;
+        font-size: 16px;  /* Larger font for readability */
+        transition: background-color 0.3s ease;
+    }
+
+    .modal-form .button:hover,
+    .button:hover {
+        background-color: #219150;
+    }
+
+        .button {
+            background-color: #27ae60;
+            color: white;
+            padding: 16px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;  /* Larger font for readability */
+            transition: background-color 0.3s ease;
+        }
+
+        .button:hover {
+            background-color: #219150;
+        }
+
+        .search-container {
+            margin-bottom: 25px;
+            display: flex;
+            gap: 15px;
+            justify-content: flex-start;
+        }
+
+        .search-container input[type="text"],
+        .search-container select {
+            padding: 14px;
+            font-size: 16px;
+            width: 320px; /* Wider search bar and filters */
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .search-container input[type="text"]:focus,
+        .search-container select:focus {
+            border-color: #27ae60;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 200px;
+            }
+
+            .container {
+                margin-left: 200px;
+                width: calc(100% - 200px);
+            }
+
+            .batch-container {
+                flex-direction: column;
+            }
+
+            .search-container input[type="text"],
+            .search-container select {
+                width: 100%; /* Make search bar full-width on smaller screens */
+            }
+
+            .modal-content {
+                width: 95%; /* Adjust modal width for mobile devices */
+                padding: 25px;
+            }
+
+            .modal-form input,
+            .modal-form select,
+            .modal-form textarea {
+                padding: 14px; /* Adjust padding for smaller screens */
+                font-size: 15px; /* Slightly smaller font size for small devices */
+            }
+
+            .modal-form textarea {
+                min-height: 140px; /* Ensure textarea is not too small */
+            }
+        }
+
+    </style>
+</head>
+<body>
+</ul>
+</div>
+<div class="sidebar">
+<h2>Admin Dashboard</h2>
+<ul>
+    <!-- Farmers Menu -->
+    <li id="barangayContainer" onclick="window.location.href='farmers-record.html'">
+        <i class="fas fa-user-friends"></i> Farmers
+    </li>
+
+    <!-- Distribution Records Menu with Submenu -->
+    <li onclick="toggleDistributionSubMenu()" id="distribution-records">
+        <i class="fas fa-clipboard-list"></i> Distribution Records
+    </li>
+    <div id="distribution-submenu" style="display:none;">
+        <li onclick="showSection('distribution')"><i class="fas fa-box"></i> Batches</li>
+        <li onclick="showSection('summary')"><i class="fas fa-chart-line"></i> Summary</li>
+        <li onclick="openBatchModal()"><i class="fas fa-box"></i> Create Batch</li>
+        <li onclick="showSection('history')"><i class="fas fa-history"></i> History</li>
+    </div>
+
+    <!-- Farmers Activities Menu -->
+    <li id="farmersActivitiesMenu" onclick="window.location.href='farmers-record.html'">
+        <i class="fas fa-seedling"></i> Farmers Activities
+    </li>
+
+    <!-- User Management Menu -->
+    <li id="userManagementMenu" onclick="window.location.href='user.html'">
+        <i class="fas fa-users-cog"></i> User Management
+    </li>
+
+    <!-- Settings Menu -->
+    <li id="settingsMenu" onclick="window.location.href='settings.html'">
+        <i class="fas fa-cogs"></i> Settings
+    </li>
+
+    <!-- Logout Menu -->
+    <li id="logoutMenu" onclick="window.location.href='index.html'">
+        <i class="fas fa-sign-out-alt"></i> Logout
+    </li>
+</ul>
+</div>
+    
+    
+
+    <div class="container" id="container">
+        <div id="summarySection">
+            <h1>Distribution Summary</h1>
+            <div class="summary">
+                <div id="summaryText">
+                    <!-- Summary data dynamically inserted here -->
+                </div>
+            </div>
+            
+        </div>
+
+        <div id="distributionSection" style="display:none;">
+            <h2>Distribution Batches</h2>
+            <div class="search-container">
+                <input type="text" id="batchSearch" placeholder="Search by batch name" oninput="searchBatches()">
+                <select id="quantity" onchange="filterBatchesByQuantity()">
+                    <option value="">Filter by Quantity</option>
+                    <option value="remaining">Remaining Quantity</option>
+                    <option value="distributed">Distributed Quantity</option>
+                </select>
+            </div>
+            
+            <div class="batch-container" id="batchContainer">
+                <!-- Batches will be displayed here -->
+            </div> 
+            <!-- CV Export Button -->
+        <div class="cv-button-wrapper">
+            <button class="cv-button" onclick="downloadCV()">
+                <i class="fas fa-file-download"></i> Export CV
+            </button>   
+        </div>
+        </div>
+
+
+
+        <div id="historySection" style="display:none;">
+            <h2>Distribution History</h2>
+            
+            <div>
+                <label for="historyStartDate">Start Date:</label>
+                <input type="date" id="historyStartDate" onchange="filterHistoryByDateRange()">
+                <label for="historyEndDate">End Date:</label>
+                <input type="date" id="historyEndDate" onchange="filterHistoryByDateRange()">
+            </div>
+            <div class="history-timeline" id="historyTimeline">
+                <!-- History records will be displayed here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Creating New Batch -->
+    <div id="batchModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeBatchModal()">&times;</span>
+            <h2>Create New Distribution Batch</h2>
+            <label for="totalQuantity">Total Quantity</label>
+            <input type="number" id="totalQuantity" required>
+            <label for="batchName">Batch Name</label>
+            <input type="text" id="batchName" required>
+            <button class="button" onclick="createNewBatch()">Create Batch</button>
+        </div>
+    </div>
+
+    <!-- Modal for Adding Distribution Record -->
+    <div id="distributionModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeDistributionModal()">&times;</span>
+            <h2>Add Distribution Record</h2>
+            <label for="distributionBatchId">Batch ID</label>
+            <select id="distributionBatchId"></select>
+            <label for="distributedQuantity">Distributed Quantity</label>
+            <input type="number" id="distributedQuantity" required>
+            <label for="rsbaSearch">RSBA Number</label>
+            <input type="text" id="rsbaSearch" placeholder="Search by RSBA Number" oninput="suggestFarmerNames()">
+            <label for="distributedTo">Distributed To (Farmer Name)</label>
+            <select id="distributedTo" required>
+                <option value="">Select Farmer</option>
+            </select>
+            <label for="distributionDate">Date</label>
+            <input type="date" id="distributionDate" required>
+            <button class="button" onclick="addDistributionRecord()">Submit</button>
+        </div>
+    </div>
+
+    <script>
+        // Initialize empty arrays to store batch and history data
+        let distributionBatches = JSON.parse(localStorage.getItem('distributionBatches')) || [];
+        let distributionHistory = JSON.parse(localStorage.getItem('distributionHistory')) || [];
+        let users = JSON.parse(localStorage.getItem('users')) || [];
+        let approvedUsers = users.filter(user => user.status === 'Approved');
+
+        function suggestFarmerNames() {
+            const rsbaInput = document.getElementById('rsbaSearch').value.trim().toLowerCase();
+            const farmerSelect = document.getElementById('distributedTo');
+            farmerSelect.innerHTML = '<option value="">Select Farmer</option>'; 
+
+            if (rsbaInput) {
+                // Filter approved users based on RSBA number
+                const matchedUsers = approvedUsers.filter(user => 
+                    user.rsbaNumber.toLowerCase().includes(rsbaInput)
+                );
+
+                // Add the filtered users to the dropdown
+                matchedUsers.forEach(user => {
+                    const option = document.createElement('option');
+                    option.value = `${user.firstName} ${user.middleInitial ? user.middleInitial + '.' : ''} ${user.lastName}`;
+                    option.textContent = `${user.firstName} ${user.middleInitial ? user.middleInitial + '.' : ''} ${user.lastName}`;
+                    farmerSelect.appendChild(option);
+                });
+            }
+        }
+
+        // Save batches to localStorage
+        function saveToLocalStorage() {
+            localStorage.setItem('distributionBatches', JSON.stringify(distributionBatches));
+            localStorage.setItem('distributionHistory', JSON.stringify(distributionHistory));
+        }
+
+        // Show the selected section
+        function showSection(section) {
+            document.getElementById('distributionSection').style.display = section === 'distribution' ? 'block' : 'none';
+            document.getElementById('summarySection').style.display = section === 'summary' ? 'block' : 'none';
+            document.getElementById('historySection').style.display = section === 'history' ? 'block' : 'none';
+        }
+
+        // Open the modal to create a new batch
+        function openBatchModal() {
+            document.getElementById('batchModal').style.display = 'flex';
+        }
+
+        // Close the create batch modal
+        function closeBatchModal() {
+            document.getElementById('batchModal').style.display = 'none';
+        }
+
+        // Open the modal to add a distribution record
+        function openDistributionModal() {
+            document.getElementById('distributionModal').style.display = 'flex';
+            populateBatchDropdown();
+        }
+
+        // Close the distribution record modal
+        function closeDistributionModal() {
+            document.getElementById('distributionModal').style.display = 'none';
+        }
+
+        // Create a new distribution batch
+        function createNewBatch() {
+            const totalQuantity = parseInt(document.getElementById('totalQuantity').value);
+            const batchName = document.getElementById('batchName').value;
+
+            if (!totalQuantity || !batchName) {
+                alert('Please provide valid data!');
+                return;
+            }
+
+            const newBatch = {
+                batchId: generateBatchId(),
+                batchName,
+                totalQuantity,
+                remainingQuantity: totalQuantity,
+                distributions: [],
+            };
+
+            distributionBatches.push(newBatch);
+            saveToLocalStorage();
+            closeBatchModal();
+            updateBatchDisplay();
+        }
+
+        // Add a new distribution record
+        function addDistributionRecord() {
+        const batchId = document.getElementById('distributionBatchId').value;
+        const distributedQuantity = parseInt(document.getElementById('distributedQuantity').value);
+        const distributedTo = document.getElementById('distributedTo').value;
+        const dateDistributed = document.getElementById('distributionDate').value;
+
+        if (!distributedQuantity || distributedQuantity <= 0 || !distributedTo.trim() || !dateDistributed) {
+            alert('Please provide valid data (positive distributed quantity, valid farmer name, and date)!');
+            return;
+        }
+
+        const batch = distributionBatches.find(b => b.batchId === batchId);
+
+        if (batch && batch.remainingQuantity >= distributedQuantity) {
+            batch.remainingQuantity -= distributedQuantity;
+
+            batch.distributions.push({
+                distributedQuantity,
+                distributedTo,
+                dateDistributed
+            });
+
+            // Add to history timeline
+            distributionHistory.push({
+                dateDistributed,
+                distributedTo,
+                distributedQuantity,
+                type: batch.batchName
+            });
+            
+
+
+
+            saveToLocalStorage();
+            updateBatchDisplay();
+            updateHistoryTimeline();
+            closeDistributionModal();
+        } 
+
+        
+        
+        else {
+            alert('Not enough quantity in batch or invalid batch ID!');
+        }
+    }
+
+    
+
+
+            // Toggle the visibility of the sub-menu under Distribution Records
+        // Enhanced section toggle for better user experience
+        function toggleDistributionSubMenu() {
+            const submenu = document.getElementById('distribution-submenu');
+            
+            // Toggle the submenu visibility
+            submenu.style.display = submenu.style.display === 'none' || submenu.style.display === '' ? 'block' : 'none';
+
+            // Close other sections
+            closeOtherSections();
+        }
+
+    // Hide other sections (optional)
+    function closeOtherSections() {
+        const otherSections = ['summarySection', 'distributionSection', 'historySection'];
+        otherSections.forEach(sectionId => {
+            document.getElementById(sectionId).style.display = 'none';
+        });
+    }
+
+
+        // Update the batch display on the page
+        function updateBatchDisplay() {
+            const batchContainer = document.getElementById('batchContainer');
+            batchContainer.innerHTML = '';
+
+            distributionBatches.forEach(batch => {
+                const batchBox = document.createElement('div');
+                batchBox.className = 'batch-box';
+                batchBox.onclick = () => toggleBatchDetails(batch.batchId);
+
+                
+
+                batchBox.innerHTML = `
+                    <h3>${batch.batchName}</h3>
+                    <p>Total: ${batch.totalQuantity} | Remaining: ${batch.remainingQuantity}</p>
+                    <button onclick="openDistributionModal()">Add Distribution</button>
+                    <div class="batch-details" id="details-${batch.batchId}">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Quantity</th>
+                                    <th>Farmer</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${batch.distributions.map(d => `
+                                    <tr>
+                                        <td>${d.distributedQuantity}</td>
+                                        <td>${d.distributedTo}</td>
+                                        <td>${d.dateDistributed}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                        <div class="history-timeline">
+                            ${batch.distributions.map(d => `
+                                <div class="history-item">
+                                    <span>${d.dateDistributed} - ${d.distributedTo} received ${d.distributedQuantity}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+                batchContainer.appendChild(batchBox);
+            });
+
+            // Update Summary
+            updateSummary();
+        }
+
+        
+
+   
+
+
+    // Function to export a single batch to CSV
+    function downloadBatchCSV(batchId) {
+        const batch = distributionBatches.find(b => b.batchId === batchId);
+        if (batch) {
+            const csvContent = generateCSV([batch]);  // Generate CSV for the selected batch
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `${batch.batchName}.csv`;
+            link.click();
+        }
+    }
+
+        function initializeModal() {
+            const farmerSelect = document.getElementById('distributedTo');
+            approvedUsers.forEach(user => {
+                const option = document.createElement('option');
+                option.value = `${user.firstName} ${user.middleInitial ? user.middleInitial + '.' : ''} ${user.lastName}`;
+                option.textContent = `${user.firstName} ${user.middleInitial ? user.middleInitial + '.' : ''} ${user.lastName}`;
+                farmerSelect.appendChild(option);
+            });
+        }
+
+        // Initialize modal on page load
+        initializeModal();
+
+        // Toggle batch details view
+        function toggleBatchDetails(batchId) {
+            const detailsDiv = document.getElementById(`details-${batchId}`);
+            detailsDiv.style.display = detailsDiv.style.display === 'block' ? 'none' : 'block';
+        }
+
+        // Populate dropdown for batch selection
+        function populateBatchDropdown() {
+            const batchSelect = document.getElementById('distributionBatchId');
+            batchSelect.innerHTML = '';
+            distributionBatches.forEach(batch => {
+                const option = document.createElement('option');
+                option.value = batch.batchId;
+                option.innerText = batch.batchName;
+                batchSelect.appendChild(option);
+            });
+        }
+
+        // Generate a unique batch ID
+        function generateBatchId() {
+            return 'BATCH-' + new Date().getTime();
+        }
+
+        // Update summary information
+        function updateSummary() {
+            const totalBatches = distributionBatches.length;
+            const totalDistributed = distributionBatches.reduce((sum, batch) => sum + (batch.totalQuantity - batch.remainingQuantity), 0);
+            const totalRemaining = distributionBatches.reduce((sum, batch) => sum + batch.remainingQuantity, 0);
+
+            document.getElementById('summaryText').innerHTML = `
+                <h3>Total Batches: ${totalBatches}</h3>
+                <h3>Total Distributed: ${totalDistributed}</h3>
+                <h3>Total Remaining: ${totalRemaining}</h3>
+            `;
+        }
+
+        
+
+        // Filter history by selected date range
+        function filterHistoryByDateRange() {
+            const startDate = document.getElementById('historyStartDate').value;
+            const endDate = document.getElementById('historyEndDate').value;
+
+            const filteredHistory = distributionHistory.filter(record => {
+                const recordDate = new Date(record.dateDistributed);
+                return (!startDate || recordDate >= new Date(startDate)) && (!endDate || recordDate <= new Date(endDate));
+            });
+
+            const historyTimeline = document.getElementById('historyTimeline');
+            historyTimeline.innerHTML = '';
+            
+            filteredHistory.forEach(record => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                historyItem.innerHTML = `
+                    <span>${record.dateDistributed} - ${record.distributedTo} received ${record.type} (${record.distributedQuantity} units)</span>
+                `;
+                historyTimeline.appendChild(historyItem);
+            });
+        }
+
+        // Search for batches
+        function searchBatches() {
+            const searchQuery = document.getElementById('batchSearch').value.toLowerCase();
+            const batchContainer = document.getElementById('batchContainer');
+
+            batchContainer.innerHTML = '';
+            distributionBatches.filter(batch => batch.batchName.toLowerCase().includes(searchQuery)).forEach(batch => {
+                const batchBox = document.createElement('div');
+                batchBox.className = 'batch-box';
+                batchBox.onclick = () => toggleBatchDetails(batch.batchId);
+
+                batchBox.innerHTML = `
+                    <h3>${batch.batchName}</h3>
+                    <p>Total: ${batch.totalQuantity} | Remaining: ${batch.remainingQuantity}</p>
+                    <button onclick="openDistributionModal()">Add Distribution</button>
+                    <div class="batch-details" id="details-${batch.batchId}">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Quantity</th>
+                                    <th>Farmer</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${batch.distributions.map(d => `
+                                    <tr>
+                                        <td>${d.distributedQuantity}</td>
+                                        <td>${d.distributedTo}</td>
+                                        <td>${d.dateDistributed}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+                batchContainer.appendChild(batchBox);
+            });
+        }
+
+        // Filter batches by quantity (remaining or distributed)
+        function filterBatchesByQuantity() {
+            const filterValue = document.getElementById('quantityFilter').value;
+            const batchContainer = document.getElementById('batchContainer');
+
+            batchContainer.innerHTML = '';
+            distributionBatches.filter(batch => {
+                if (filterValue === 'remaining') return batch.remainingQuantity > 0;
+                if (filterValue === 'distributed') return batch.remainingQuantity < batch.totalQuantity;
+                return true;
+            }).forEach(batch => {
+                const batchBox = document.createElement('div');
+                batchBox.className = 'batch-box';
+                batchBox.onclick = () => toggleBatchDetails(batch.batchId);
+
+                batchBox.innerHTML = `
+                    <h3>${batch.batchName}</h3>
+                    <p>Total: ${batch.totalQuantity} | Remaining: ${batch.remainingQuantity}</p>
+                    <button onclick="openDistributionModal()">Add Distribution</button>
+                    <div class="batch-details" id="details-${batch.batchId}">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Quantity</th>
+                                    <th>Farmer</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${batch.distributions.map(d => `
+                                    <tr>
+                                        <td>${d.distributedQuantity}</td>
+                                        <td>${d.distributedTo}</td>
+                                        <td>${d.dateDistributed}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+                batchContainer.appendChild(batchBox);
+            });
+        }
+
+        // Initial setup
+        showSection('distribution');
+
+        function downloadCSV() {
+    const csvContent = generateCSV(distributionBatches);
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'distribution_batches.csv';
+    link.click();
+}
+
+    function generateCSV(batches) {
+    let csvContent = 'Batch ID,Batch Name,Total Quantity,Remaining Quantity,Distributed Quantity\n';
+
+    batches.forEach(batch => {
+        const distributedQuantity = batch.totalQuantity - batch.remainingQuantity;
+        csvContent += `${batch.batchId},"${batch.batchName.replace(/"/g, '""')}",${batch.totalQuantity},${batch.remainingQuantity},${distributedQuantity}\n`;
+    });
+
+    return csvContent;
+}
+
+        // Initial page load setup
+        document.addEventListener('DOMContentLoaded', function () {
+            updateBatchDisplay();
+
+            
+        });
+
+
+        
+
+
+    </script>
+</body>
+</html>

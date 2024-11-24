@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="ARMS LOGO.png" type="image/png">
+    <title>All Activities</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        /* Basic styling */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7fb;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .header {
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            font-size: 2.5em;
+            word-wrap: break-word;
+        }
+
+        .nav-bar {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            background-color: #333;
+            padding: 10px 20px;
+        }
+
+        .nav-bar a {
+            color: white;
+            text-decoration: none;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            transition: background-color 0.3s;
+        }
+
+        .nav-bar a:hover {
+            background-color: #575757;
+        }
+
+        .nav-bar i {
+            margin-right: 10px;
+            font-size: 20px;
+        }
+
+        /* Activity Section */
+        .activity-container {
+            max-width: 1200px;
+            margin: 20px auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .activity-feed {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .activity-item {
+            background-color: #fafafa;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .activity-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .activity-item.approved::after {
+            content: "Approved";
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(76, 175, 80, 0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 14px;
+            opacity: 0;
+            animation: fadeInOut 1s forwards;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; }
+            50% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        .activity-item img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .approve-button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s ease;
+        }
+
+        .approve-button:hover {
+            background-color: #45a049;
+        }
+
+        /* Full-Screen Image Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 10;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .modal-content {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+
+        .modal-content img {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+        }
+
+        .close {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 24px;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            color: white;
+            text-decoration: none;
+        }
+
+        .close:hover {
+            background-color: rgba(255, 0, 0, 0.7);
+        }
+
+        /* Confirmation Modal */
+        .confirm-modal {
+            display: none;
+            position: fixed;
+            z-index: 11;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .confirm-modal-content {
+            background-color: white;
+            color: black;
+            padding: 20px;
+            border-radius: 10px;
+            width: 300px;
+            text-align: center;
+        }
+
+        .confirm-modal-content button {
+            padding: 10px 20px;
+            margin: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .confirm-yes {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .confirm-no {
+            background-color: #f44336;
+            color: white;
+        }
+
+        /* Responsive Styles */
+        @media screen and (max-width: 768px) {
+            .header {
+                font-size: 1.8em;
+                padding: 15px;
+            }
+
+            .nav-bar a {
+                padding: 10px 15px;
+            }
+
+            .activity-feed {
+                grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            }
+
+            .activity-item img {
+                max-height: 130px;
+            }
+
+            .approve-button {
+                padding: 6px 12px;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            .header {
+                font-size: 1.5em;
+                padding: 12px;
+            }
+
+            .nav-bar a {
+                padding: 8px 12px;
+                font-size: 14px;
+            }
+
+            .activity-feed {
+                grid-template-columns: 1fr;
+            }
+
+            .activity-item img {
+                max-height: 120px;
+            }
+
+            .approve-button {
+                padding: 5px 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        All Activities
+    </div>
+
+    <div class="nav-bar">
+        <a href="admin.html" class="nav-link">
+            <i class="fa fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+
+    <!-- Activity Section -->
+    <div class="activity-container">
+        <h2>Your Activity Feed</h2>
+
+        <div id="activityFeed" class="activity-feed">
+            <!-- Activities will be displayed here -->
+        </div>
+    </div>
+
+    <!-- Modal for Full Screen Image -->
+    <div id="imageModal" class="modal">
+        <div class="modal-content">
+            <a class="close" onclick="closeModal()">&times;</a>
+            <img id="modalImage" alt="Full-screen Activity Image">
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="confirm-modal">
+        <div class="confirm-modal-content">
+            <p>Are you sure you want to approve this activity?</p>
+            <button class="confirm-yes" onclick="confirmApprove()">Yes</button>
+            <button class="confirm-no" onclick="closeConfirmModal()">No</button>
+        </div>
+    </div>
+
+    <script>
+        let activityToApprove;
+
+        // Load user info and activities
+        const users = JSON.parse(localStorage.getItem('users')) || [];
+        const latestUser = users.length > 0 ? users[users.length - 1] : null;
+
+        if (latestUser) {
+            // Load activities for the current user
+            displayActivities();
+        }
+
+        // Display all activities for the current user
+        function displayActivities() {
+            const activities = JSON.parse(localStorage.getItem(`activities-${latestUser.userId}`)) || [];
+            const activityFeed = document.getElementById('activityFeed');
+            activityFeed.innerHTML = activities.map((activity, index) => `
+                <div class="activity-item" id="activity-${index}">
+                    <h3>${activity.userName}</h3>
+                    <img src="${activity.image}" alt="Activity Image" onclick="openModal('${activity.image}')">
+                    <p>${activity.caption}</p>
+                    <span>${activity.timestamp}</span>
+                    <div>
+                        <button class="approve-button" onclick="openConfirmModal(${index})">Approve</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Open modal for full-screen image
+        function openModal(imageSrc) {
+            const modal = document.getElementById('imageModal');
+            const modalImage = document.getElementById('modalImage');
+            modal.style.display = "flex";
+            modalImage.src = imageSrc;
+        }
+
+        // Close modal
+        function closeModal() {
+            const modal = document.getElementById('imageModal');
+            modal.style.display = "none";
+        }
+
+        // Open confirmation modal
+        function openConfirmModal(index) {
+            activityToApprove = index;
+            document.getElementById('confirmModal').style.display = "flex";
+        }
+
+        // Confirm approval
+        function confirmApprove() {
+            const activityItem = document.getElementById(`activity-${activityToApprove}`);
+            activityItem.classList.add('approved');
+            closeConfirmModal();
+        }
+
+        // Close confirmation modal
+        function closeConfirmModal() {
+            document.getElementById('confirmModal').style.display = "none";
+        }
+    </script>
+</body>
+</html>
